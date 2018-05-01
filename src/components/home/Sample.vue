@@ -1,26 +1,19 @@
 <template>
-  <el-container id="hello-world">
-    <app-header></app-header>
-    <el-container id="chart-1">
-      <vue-echarts id="polar" :options="polar"></vue-echarts>
-      <vue-echarts id="calendar" :options="calendar"></vue-echarts>
-      <vue-echarts id="pie" :options="getPie()"></vue-echarts>
-      <vue-echarts id="stacked" :options="stacked"></vue-echarts>
-      <vue-echarts id="chinaMap" :options="getChinaMap()"></vue-echarts>
-      <vue-echarts id="dataSet" :options="dataSet"></vue-echarts>
-    </el-container>
+  <el-container id="sample-chart">
+    <vue-echarts id="polar" :options="polar"></vue-echarts>
+    <vue-echarts id="calendar" :options="calendar"></vue-echarts>
+    <vue-echarts id="pie" :options="getPie()"></vue-echarts>
+    <vue-echarts id="stacked" :options="stacked"></vue-echarts>
+    <vue-echarts id="chinaMap" :options="getChinaMap()"></vue-echarts>
+    <vue-echarts id="dataSet" :options="dataSet"></vue-echarts>
   </el-container>
 </template>
 
 <script>
-import AppHeader from './AppHeader'
-const option3DData = require('../assets/json/life-expectancy-table')
+const option3DData = require('@/assets/json/life-expectancy-table')
 
 export default {
-  name: 'HelloWorld',
-  components: {
-    AppHeader
-  },
+  name: 'sample',
   data () {
     return {
       polar: {
@@ -789,37 +782,20 @@ export default {
       }
       return chinaMap
     }
-  },
-  mounted () {
-    this.$axios.get('http://localhost:8081')
-      .then(resp => {
-        console.log(JSON.stringify(resp.data))
-      })
-    // let tempChart = this.$echarts.init(this.$jquery('#polar'))
-    // tempChart.setOption(this.polar)
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-  #hello-world {
-    max-width: 1280px;
-    min-width: 700px;
+  #sample-chart {
     display: flex;
-    flex-direction: column;
-    margin-top: 0;
-
-    #chart-1 {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-self: center;
-      margin-top: 20px;
-      padding: 10px;
-      .echarts {
-        margin: auto;
-      }
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-self: center;
+    margin-top: 20px;
+    padding: 10px;
+    .echarts {
+      margin: auto;
     }
   }
 </style>

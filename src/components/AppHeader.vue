@@ -1,8 +1,8 @@
 <template>
   <el-container id="app-header">
     <img src="../assets/img/logo.png">
-    <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
-      <el-menu-item index="home">首页</el-menu-item>
+    <el-menu default-active="Sample" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+      <el-menu-item index="Sample">首页</el-menu-item>
       <el-submenu index="zhihu">
         <template slot="title">知乎</template>
         <el-menu-item index="zhihu-answer">答案分析</el-menu-item>
@@ -27,18 +27,31 @@ export default {
       router_list: [
         {
           text: '主页',
-          name: 'home'
+          children: [
+            {
+              text: '系统说明',
+              link: 'readme'
+            },
+            {
+              text: '图表展示',
+              link: 'sample'
+            }
+          ]
         },
         {
-          text: '知乎案例',
-          name: 'zhihu'
+          text: '知乎',
+          children: [
+            {
+              text: '答案分析',
+              link: 'zhihu-sample'
+            }
+          ]
         },
         {
           text: '自定义',
-          name: 'diy'
+          link: '/diy'
         }
-      ],
-      activeIndex: '1'
+      ]
     }
   },
   methods: {
@@ -74,13 +87,17 @@ export default {
     border-bottom: none;
     .el-menu-item, .el-submenu{
       > div {
-        color: black !important;
+        color: #909399;
       }
-      color: black;
+      color: #909399;
       width: 130px;
     }
+    .el-menu-item:hover {
+      background-color: initial;
+    }
     .is-active {
-      color: white;
+      color: #303133;
+      background-color: initial;
     }
   }
 }
