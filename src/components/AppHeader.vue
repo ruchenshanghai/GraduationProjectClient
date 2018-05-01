@@ -2,18 +2,11 @@
   <el-container id="app-header">
     <img src="../assets/img/logo.png">
     <el-menu default-active="Sample" class="el-menu-demo" mode="horizontal" @select="handleSelect">
-      <el-menu-item index="Sample">首页</el-menu-item>
-      <el-submenu index="zhihu">
-        <template slot="title">知乎</template>
-        <el-menu-item index="zhihu-answer">答案分析</el-menu-item>
-        <el-menu-item index="zhihu-user">用户推荐</el-menu-item>
-        <el-menu-item index="zhihu-example">样例展示</el-menu-item>
-      </el-submenu>
-      <el-submenu index="diy">
-        <template slot="title">自定义数据</template>
-        <el-menu-item index="diy-word">文本分析</el-menu-item>
-        <el-menu-item index="diy-chart">可视化</el-menu-item>
-        <el-menu-item index="diy-example">样例展示</el-menu-item>
+      <el-submenu v-for="item in router_list" :key="item.text" :index="item.text">
+          <template slot="title">{{item.text}}</template>
+          <el-menu-item v-for="sub_item in item.children" :key="sub_item.text" :index="sub_item.link">
+            {{sub_item.text}}
+          </el-menu-item>
       </el-submenu>
     </el-menu>
   </el-container>
@@ -30,11 +23,11 @@ export default {
           children: [
             {
               text: '系统说明',
-              link: 'readme'
+              link: '/readme'
             },
             {
               text: '图表展示',
-              link: 'sample'
+              link: '/sample'
             }
           ]
         },
@@ -43,24 +36,43 @@ export default {
           children: [
             {
               text: '答案分析',
-              link: 'zhihu-sample'
+              link: '/zhihu-answer'
+            },
+            {
+              text: '用户推荐',
+              link: '/zhihu-user'
+            },
+            {
+              text: '样例展示',
+              link: '/zhihu-sample'
             }
           ]
         },
         {
           text: '自定义',
-          link: '/diy'
+          children: [
+            {
+              text: '文本分析',
+              link: '/diy-txt'
+            },
+            {
+              text: '可视化',
+              link: '/diy-visual'
+            },
+            {
+              text: '样例展示',
+              link: '/diy-sample'
+            }
+          ]
         }
       ]
     }
   },
   methods: {
-    redirectTo (router) {
-      console.log(router.text)
-      console.log(router.name)
-    },
     handleSelect (val) {
-      console.log(JSON.stringify(val))
+      this.$router.push({
+        path: val
+      })
     }
   }
 }

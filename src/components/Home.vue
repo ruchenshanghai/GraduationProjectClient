@@ -24,10 +24,12 @@ export default {
   methods: {
   },
   mounted () {
-    this.$axios.get('http://localhost:8081')
-      .then(resp => {
-        console.log(JSON.stringify(resp.data))
-      })
+    // this.$axios.post('http://localhost:8081', {
+    //   test: 'just for test'
+    // })
+    //   .then(resp => {
+    //     console.log(JSON.stringify(resp.data))
+    //   })
   }
 }
 </script>
