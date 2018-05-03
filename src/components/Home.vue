@@ -37,7 +37,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
   #home-container {
-    width: 1280px;
+    width: 980px;
     display: flex;
     flex-direction: column;
     margin-top: 0;

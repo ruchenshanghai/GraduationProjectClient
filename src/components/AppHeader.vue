@@ -85,7 +85,7 @@ export default {
   flex-direction: row;
   justify-content: left;
   width: 100%;
-  max-width: 1280px;
+  max-width: 980px;
   padding: 10px;
   > img {
     width: 50px;
