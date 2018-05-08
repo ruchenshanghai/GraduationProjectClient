@@ -45,7 +45,7 @@
                       class="el-container-sidebar" :key="index + '-2'">
           <template v-for="user in chartOption.users">
             <vue-echarts :key="user.id + '-' + index" :options="user.options" style="width: 300px; height: 300px"
-                         @click="userClick(user.user_token)"></vue-echarts>
+                         @click="parseUserDialog(user)"></vue-echarts>
           </template>
         </el-container>
       </template>
@@ -76,7 +76,8 @@
           </p>
           <p v-if="question.keywords.length > 0">
             相关主题:&nbsp;
-            <span class="span-button" v-for="keyword in question.keywords" :key="question.id + keyword" @click="zhihuSearch(keyword + '&type=topic')">{{keyword}}&nbsp;</span>
+            <span class="span-button" v-for="keyword in question.keywords" :key="question.id + keyword"
+                  @click="zhihuSearch(keyword + '&type=topic')">{{keyword}}&nbsp;</span>
           </p>
           <p>
             <span>关注者数：<span class="span-number">{{question.followers}}</span></span>
@@ -91,8 +92,74 @@
       </span>
     </el-dialog>
 
-    <el-dialog v-if="userDialog.id !== undefined">
-
+    <el-dialog v-if="userDialog.id !== undefined"
+               :title="userDialog.name"
+               :visible.sync="userDialogVisible"
+               width="50%" center id="user-dialog">
+      <p>
+        用户昵称: {{userDialog.name}}
+        <span v-if="userDialog.gender"> 男 </span>
+        <span v-else> 女 </span>
+        <span v-if="userDialog.is_advertiser"> 广告主 </span>
+        <span v-if="userDialog.is_org"> 机构号 </span>
+        <span v-if="userDialog.identity"> 身份: {{userDialog.identity}}</span>
+        <span v-if="userDialog.business" @click="transferFromUserToTopic(userDialog.business)"> 行业: {{userDialog.business.name}}</span>
+      </p>
+      <p v-if="userDialog.headline">个人描述: {{userDialog.headline}}</p>
+      <p>
+        <template v-if="userDialog.best_list && userDialog.best_list.length > 0" >
+          最佳回答领域:&nbsp;
+        <span class="span-button" v-for="topic in userDialog.best_list" :key="topic.name + userDialog.id" @click="transferFromUserToTopic(topic)">
+          {{topic.name}}&nbsp;
+        </span>
+        </template>
+        <span>
+          <el-button type="primary" @click="imgClick(userDialog.avatar_url)">查看图片</el-button>
+          <el-button type="primary" @click="zhihuPeople(topicDialog.user_token)">前往知乎个人主页</el-button>
+        </span>
+      </p>
+      <p>
+        <span>关注者数: <span class="span-number">{{userDialog.folloewer_count}}</span>, </span>
+        <span>关注数: <span class="span-number">{{userDialog.folloewing_count}}</span>, </span>
+        <span>提问数: <span class="span-number">{{userDialog.question_count}}</span>, </span>
+        <span>回答数: <span class="span-number">{{userDialog.answer_count}}</span>, </span>
+        <span>被感谢数: <span class="span-number">{{userDialog.thanked_count}}</span>, </span>
+        <span>被点赞数: <span class="span-number">{{userDialog.voteup_count}}</span>, </span>
+        <span>专栏文章数: <span class="span-number">{{userDialog.articles_count}}</span></span>
+      </p>
+      <p v-if="userDialog.location_list && userDialog.location_list.length > 0">
+        居住地点:&nbsp;
+        <span class="span-button" v-for="topic in userDialog.location_list" :key="topic.name + userDialog.id" @click="transferFromUserToTopic(topic)">
+          {{topic.name}}&nbsp;
+        </span>
+      </p>
+      <p v-if="userDialog.company_list && userDialog.company_list.length > 0">
+        公司历程:&nbsp;
+        <span class="span-button" v-for="topic in userDialog.company_list" :key="topic.name + userDialog.id" @click="transferFromUserToTopic(topic)">
+          {{topic.name}}&nbsp;
+        </span>
+      </p>
+      <p v-if="userDialog.job_list && userDialog.job_list.length > 0">
+        岗位历程:&nbsp;
+        <span class="span-button" v-for="topic in userDialog.job_list" :key="topic.name + userDialog.id" @click="transferFromUserToTopic(topic)">
+          {{topic.name}}&nbsp;
+        </span>
+      </p>
+      <p v-if="userDialog.school_list && userDialog.school_list.length > 0">
+        教育经历:&nbsp;
+        <span class="span-button" v-for="topic in userDialog.school_list" :key="topic.name + userDialog.id" @click="transferFromUserToTopic(topic)">
+          {{topic.name}}&nbsp;
+        </span>
+      </p>
+      <p v-if="userDialog.major_list && userDialog.major_list.length > 0">
+        所修专业:&nbsp;
+        <span class="span-button" v-for="topic in userDialog.major_list" :key="topic.name + userDialog.id" @click="transferFromUserToTopic(topic)">
+          {{topic.name}}&nbsp;
+        </span>
+      </p>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="userDialogVisible = false">确 定</el-button>
+      </span>
     </el-dialog>
   </el-container>
 </template>
@@ -337,6 +404,7 @@ export default {
       isLoading: false,
       topicDialogVisible: false,
       topicDialog: {},
+      userDialogVisible: false,
       userDialog: {}
     }
   },
@@ -532,23 +600,52 @@ export default {
         this.zhihuSearch(params.name + '&type=content')
       }
     },
-    imgClick (url) {
-      if (url.endsWith('_is.jpg')) {
-        url = url.replace('_is.jpg', '.jpg')
-      }
-      window.open(url, '_blank')
-    },
     zhihuSearch (name) {
       window.open('https://www.zhihu.com/search?q=' + name, '_blank')
     },
     zhihuQuestion (id) {
       window.open('https://www.zhihu.com/question/' + id, '_blank')
     },
+    zhihuPeople (userToken) {
+      window.open('https://www.zhihu.com/people/' + userToken + '/activities', '_blank')
+    },
+    imgClick (url) {
+      if (url.endsWith('_is.jpg')) {
+        url = url.replace('_is.jpg', '.jpg')
+      }
+      window.open(url, '_blank')
+    },
     topicClick (id) {
       window.open('https://www.zhihu.com/topic/' + id, '_blank')
     },
-    userClick (userToken) {
-      window.open('https://www.zhihu.com/people/' + userToken, '_blank')
+    parseUserDialog (user) {
+      this.isLoading = true
+      this.$axios.get('http://localhost:8081/zhihu-user', {
+        params: {
+          id: user.id
+        }
+      }).then(resp => {
+        this.userDialogVisible = true
+        this.userDialog = resp.data
+        if (this.userDialog.question_list && this.userDialog.question_list.length > 0) {
+          console.log(JSON.stringify(this.userDialog))
+        }
+      }).finally(() => {
+        this.isLoading = false
+      })
+    },
+    transferFromUserToTopic (topic) {
+      if (topic.id) {
+        this.userDialogVisible = false
+        this.parseTopicDialog(topic)
+      } else {
+        this.zhihuSearch(topic.name + '&type=topic')
+      }
+    },
+    userClick (user) {
+      // window.open('https://www.zhihu.com/people/' + user.user_token, '_blank')
+      this.userDialog = user
+      this.userDialogVisible = true
     }
   }
 }
@@ -625,27 +722,30 @@ export default {
         }
       }
     }
-    #topic-dialog {
-      .p-center {
-        text-align: center;
+    #topic-dialog, #user-dialog {
+      p {
+        margin: 5px;
       }
       .el-container {
         display: flex;
         flex-direction: column;
       }
-      .span-button {
-        background-color: silver;
-        border-radius: 5px;
-        padding: 5px;
-        font-weight: bolder;
-        text-align: center;
-        margin-right: 10px;
-        cursor: pointer;
-      }
-      .span-number {
-        font-weight: bolder;
-        color: cornflowerblue;
-      }
+    }
+    .p-center {
+      text-align: center;
+    }
+    .span-button {
+      background-color: silver;
+      border-radius: 5px;
+      padding: 5px;
+      font-weight: bolder;
+      text-align: center;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .span-number {
+      font-weight: bolder;
+      color: cornflowerblue;
     }
   }
 </style>
