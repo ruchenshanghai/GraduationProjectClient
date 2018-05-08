@@ -37,34 +37,34 @@ export default {
             {
               text: '答案分析',
               link: '/zhihu-answer'
-            },
-            {
-              text: '用户推荐',
-              link: '/zhihu-user'
-            },
-            {
-              text: '样例展示',
-              link: '/zhihu-sample'
             }
-          ]
-        },
-        {
-          text: '自定义',
-          children: [
-            {
-              text: '文本分析',
-              link: '/diy-txt'
-            },
-            {
-              text: '可视化',
-              link: '/diy-visual'
-            },
-            {
-              text: '样例展示',
-              link: '/diy-sample'
-            }
+            // {
+            //   text: '用户推荐',
+            //   link: '/zhihu-user'
+            // },
+            // {
+            //   text: '样例展示',
+            //   link: '/zhihu-sample'
+            // }
           ]
         }
+        // {
+        //   text: '自定义',
+        //   children: [
+        //     {
+        //       text: '文本分析',
+        //       link: '/diy-txt'
+        //     },
+        //     {
+        //       text: '可视化',
+        //       link: '/diy-visual'
+        //     },
+        //     {
+        //       text: '样例展示',
+        //       link: '/diy-sample'
+        //     }
+        //   ]
+        // }
       ]
     }
   },

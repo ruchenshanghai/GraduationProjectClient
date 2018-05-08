@@ -5,7 +5,7 @@ import Home from '@/components/Home'
 import Sample from '@/components/home/Sample'
 import Readme from '@/components/home/Readme'
 
-import ZhihuSample from '@/components/zhihu/ZhihuSample'
+// import ZhihuSample from '@/components/zhihu/ZhihuSample'
 import ZhihuAnswer from '@/components/zhihu/ZhihuAnswer'
 
 Vue.use(Router)
@@ -34,11 +34,11 @@ export default new Router({
           path: '/readme',
           component: Readme
         },
-        {
-          name: 'zhihu-sample',
-          path: '/zhihu-sample',
-          component: ZhihuSample
-        },
+        // {
+        //   name: 'zhihu-sample',
+        //   path: '/zhihu-sample',
+        //   component: ZhihuSample
+        // },
         {
           name: 'zhihu-answer',
           path: '/zhihu-answer',

@@ -22,7 +22,7 @@
             </el-input>
             <p>请选择图表类型</p>
             <el-select v-model="chartOption.type" placeholder="请选择" :disabled="!chartOption.convert"
-                       @change="convertChart(chartOption)">
+                       @change="convertTopicChart(chartOption)">
               <el-option v-for="option in SELECT_CHART_OPTIONS" :key="option.value" :label="option.label"
                          :value="option.value"></el-option>
             </el-select>
@@ -32,22 +32,68 @@
 
         <el-container class="el-container-sidebar" :key="index + '-1'">
           <template v-if="chartOption.dataType === 'topic'">
-            <div class="topic-intro" v-for="topic in chartOption.data" :key="topic.id">
+            <div class="topic-intro" v-for="topic in chartOption.topics" :key="topic.id">
               <p @click="imgClick(topic.avatar_url)">
                 {{topic.name}}
                 <i class="el-icon-picture"></i>
               </p>
-              <p @click="topicClick(topic.id)">{{topic.introduction}}</p>
+              <p @click="parseTopicDialog(topic)">{{topic.introduction}}</p>
             </div>
           </template>
         </el-container>
-        <el-container v-if="chartOption.dataType === 'topic' && chartOption.users.length > 0" class="el-container-sidebar" :key="index + '-2'">
+        <el-container v-if="chartOption.dataType === 'topic' && chartOption.users.length > 0"
+                      class="el-container-sidebar" :key="index + '-2'">
           <template v-for="user in chartOption.users">
-            <vue-echarts :key="user.id + '-' + index" :options="user.options" style="width: 300px; height: 300px" @click="userClick(user.user_token)"></vue-echarts>
+            <vue-echarts :key="user.id + '-' + index" :options="user.options" style="width: 300px; height: 300px"
+                         @click="userClick(user.user_token)"></vue-echarts>
           </template>
         </el-container>
       </template>
     </el-container>
+    <el-dialog v-if="topicDialog.id !== undefined"
+               :title="topicDialog.name"
+               :visible.sync="topicDialogVisible"
+               width="50%" center id="topic-dialog">
+      <p>{{topicDialog.introduction}}</p>
+      <p>
+        <span>行业指数: <span class="span-number">{{topicDialog.business}}</span>, </span>
+        <span>公司指数: <span class="span-number">{{topicDialog.company}}</span>, </span>
+        <span>岗位指数: <span class="span-number">{{topicDialog.job}}</span>, </span>
+        <span>地理指数: <span class="span-number">{{topicDialog.location}}</span>, </span>
+        <span>专业指数: <span class="span-number">{{topicDialog.major}}</span>, </span>
+        <span>教育指数: <span class="span-number">{{topicDialog.school}}</span></span>
+      </p>
+      <p class="p-center">
+        <el-button type="primary" @click="imgClick(topicDialog.avatar_url)">查看图片</el-button>
+        <el-button type="primary" @click="zhihuSearch(topicDialog.name + '&type=topic')">前往知乎</el-button>
+      </p>
+      <template v-if="topicDialog.question_list.length > 0">
+        <p>相关问题:</p>
+        <el-container v-for="question in topicDialog.question_list" :key="question.id">
+          <p>
+            问题: {{question.content}}
+            <el-button type="primary" @click="zhihuQuestion(question.id)">前往知乎</el-button>
+          </p>
+          <p v-if="question.keywords.length > 0">
+            相关主题:&nbsp;
+            <span class="span-button" v-for="keyword in question.keywords" :key="question.id + keyword" @click="zhihuSearch(keyword + '&type=topic')">{{keyword}}&nbsp;</span>
+          </p>
+          <p>
+            <span>关注者数：<span class="span-number">{{question.followers}}</span></span>
+            <span>回答数：<span class="span-number">{{question.answers}}</span></span>
+            <span>评论数：<span class="span-number">{{question.comments}}</span></span>
+            <span>浏览数：<span class="span-number">{{question.viewers}}</span></span>
+          </p>
+        </el-container>
+      </template>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="topicDialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog v-if="userDialog.id !== undefined">
+
+    </el-dialog>
   </el-container>
 </template>
 
@@ -288,7 +334,10 @@ export default {
       SELECT_CHART_OPTIONS,
       DEFAULT_CHART_OPTIONS,
       TOPIC_LABEL,
-      isLoading: false
+      isLoading: false,
+      topicDialogVisible: false,
+      topicDialog: {},
+      userDialog: {}
     }
   },
   mounted () {
@@ -430,20 +479,20 @@ export default {
       this.chartOptions.push({
         type: 'STACKED',
         options: tempStackedChartOption,
-        data: topics,
+        topics: topics,
         users: users,
         dataType: 'topic',
         convert: true
       })
     },
-    convertChart (chart) {
+    convertTopicChart (chart) {
       let tempTitle = chart.options.title.text
       switch (chart.type) {
         case 'ROSE_PIE':
-          chart.options = this.convertTopicsToRoseChart(chart.data)
+          chart.options = this.convertTopicsToRoseChart(chart.topics)
           break
         case 'STACKED':
-          chart.options = this.convertTopicToStackedChart(chart.data)
+          chart.options = this.convertTopicToStackedChart(chart.topics)
           break
       }
       chart.options.title.text = tempTitle
@@ -451,24 +500,55 @@ export default {
     deleteChart (index) {
       this.chartOptions.splice(index, 1)
     },
+    parseTopicDialog (topic) {
+      this.isLoading = true
+      this.$axios.get('http://localhost:8081/zhihu-topic', {
+        params: {
+          id: topic.id
+        }
+      }).then(resp => {
+        if (resp.data) {
+          this.topicDialogVisible = true
+          let tempDialog = resp.data
+          let tempKeyWordList = []
+          tempDialog.question_list.forEach(q => {
+            tempKeyWordList = q.keywords.slice(1, -1).split(', ')
+            q.keywords = tempKeyWordList
+            tempKeyWordList = []
+          })
+          this.topicDialog = tempDialog
+        } else {
+          this.zhihuSearch(topic.name + '&type=topic')
+        }
+      }).finally(() => {
+        this.isLoading = false
+      })
+    },
     chartClick (params) {
       if (params.data.type === 'topic') {
-        window.open('https://www.zhihu.com/topic/' + params.data.id)
+        this.isLoading = true
+        this.parseTopicDialog(params)
       } else {
-        window.open('https://www.baidu.com/s?wd=' + params.name)
+        this.zhihuSearch(params.name + '&type=content')
       }
     },
     imgClick (url) {
       if (url.endsWith('_is.jpg')) {
         url = url.replace('_is.jpg', '.jpg')
       }
-      window.open(url)
+      window.open(url, '_blank')
+    },
+    zhihuSearch (name) {
+      window.open('https://www.zhihu.com/search?q=' + name, '_blank')
+    },
+    zhihuQuestion (id) {
+      window.open('https://www.zhihu.com/question/' + id, '_blank')
     },
     topicClick (id) {
-      window.open('https://www.zhihu.com/topic/' + id)
+      window.open('https://www.zhihu.com/topic/' + id, '_blank')
     },
     userClick (userToken) {
-      window.open('https://www.zhihu.com/people/' + userToken)
+      window.open('https://www.zhihu.com/people/' + userToken, '_blank')
     }
   }
 }
@@ -543,6 +623,28 @@ export default {
           height: 300px;
           cursor: pointer !important;
         }
+      }
+    }
+    #topic-dialog {
+      .p-center {
+        text-align: center;
+      }
+      .el-container {
+        display: flex;
+        flex-direction: column;
+      }
+      .span-button {
+        background-color: silver;
+        border-radius: 5px;
+        padding: 5px;
+        font-weight: bolder;
+        text-align: center;
+        margin-right: 10px;
+        cursor: pointer;
+      }
+      .span-number {
+        font-weight: bolder;
+        color: cornflowerblue;
       }
     }
   }
